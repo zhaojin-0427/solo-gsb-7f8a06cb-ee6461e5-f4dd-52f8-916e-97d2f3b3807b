@@ -1,0 +1,34 @@
+services:
+  node-a:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      NODE_ROLE: A
+      PEER_URL: http://node-b:8000
+      NODE_SECRET: dev-secret-change-me
+      PUBLIC_BASE: http://localhost:8001
+      PEER_PUBLIC_BASE: http://localhost:8002
+    volumes:
+      - a-data:/data
+    restart: unless-stopped
+
+  node-b:
+    build: .
+    ports:
+      - "8002:8000"
+    environment:
+      NODE_ROLE: B
+      PEER_URL: http://node-a:8000
+      NODE_SECRET: dev-secret-change-me
+      PUBLIC_BASE: http://localhost:8002
+      PEER_PUBLIC_BASE: http://localhost:8001
+      # 演练开关：置 "1" 后，B 在每个交换首次持久化决议之后返回 503（模拟回执丢失）
+      DRILL_FAIL_FIRST_RESOLUTION: "0"
+    volumes:
+      - b-data:/data
+    restart: unless-stopped
+
+volumes:
+  a-data:
+  b-data:
